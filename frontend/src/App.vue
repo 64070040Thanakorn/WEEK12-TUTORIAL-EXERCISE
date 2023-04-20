@@ -37,7 +37,7 @@
             </a>
             <div class="navbar-dropdown">
               <a class="navbar-item">Profile</a>
-              <a class="navbar-item">Log out</a>
+              <a class="navbar-item" @click="logout()">Log out</a>
             </div>
           </div>
 
@@ -59,28 +59,32 @@
 </template>
 
 <script>
-import axios from '@/plugins/axios'
+import axios from "@/plugins/axios";
 export default {
-  data () {
+  data() {
     return {
-      user: null
-    }
+      user: null,
+    };
   },
-  mounted () {
-    this.onAuthChange()
+  mounted() {
+    this.onAuthChange();
   },
   methods: {
-    onAuthChange () {
-      const token = localStorage.getItem('token')
+    onAuthChange() {
+      const token = localStorage.getItem("token");
       if (token) {
-        this.getUser()
+        this.getUser();
       }
     },
-    getUser () {
-      axios.get('http://localhost:3000/user/me').then(res => {
-        this.user = res.data
-      })
+    getUser() {
+      axios.get("http://localhost:3000/user/me").then((res) => {
+        this.user = res.data;
+      });
     },
-  }
-}
+    logout() {
+      localStorage.removeItem("token");
+      location.reload();
+    },
+  },
+};
 </script>
