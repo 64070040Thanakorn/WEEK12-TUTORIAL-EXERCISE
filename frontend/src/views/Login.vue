@@ -4,10 +4,9 @@
       <div class="column is-8">
         <h1 class="title">Welcome</h1>
         <p>
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo quae
-          rem ipsum praesentium, tenetur doloremque libero. Fugit, dolore
-          possimus molestias cupiditate iste deserunt! Aut aliquid rem quas
-          consequatur non iste.
+          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nemo quae rem ipsum
+          praesentium, tenetur doloremque libero. Fugit, dolore possimus molestias
+          cupiditate iste deserunt! Aut aliquid rem quas consequatur non iste.
         </p>
       </div>
 
@@ -45,26 +44,44 @@
           </div>
         </div>
 
-        <button class="button is-primary is-fullwidth">
-          Login
-        </button>
+        <button class="button is-primary is-fullwidth" @click="submit">Login</button>
 
-        <p class="my-3">
-          Don't have an account yet? <a href="/signup.html">Sign up</a>
-        </p>
+        <p class="my-3">Don't have an account yet? <a href="/signup.html">Sign up</a></p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from '@/plugins/axios'
 export default {
-  data () {
+  data() {
     return {
-      username: '',
-      password: '',
-      error: ''
-    }
-  }
-}
+      username: "",
+      password: "",
+      error: "",
+    };
+  },
+  methods: {
+    submit() {
+      const data = {
+        username: this.username,
+        password: this.password,
+      };
+
+      axios
+        .post("http://localhost:3000/user/login/", data)
+        .then((res) => {
+          const token = res.data.token;
+          localStorage.setItem("token", token);
+          this.$emit("auth-change");
+          this.$router.push({ path: "/" });
+        })
+        .catch((error) => {
+          this.error = error.response.data;
+          console.log(error.response.data);
+        });
+    },
+  },
+};
 </script>

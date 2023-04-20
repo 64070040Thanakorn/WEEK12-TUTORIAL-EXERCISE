@@ -18,9 +18,9 @@
               <div v-for="image in images" :key="image.id" class="column">
                 <figure class="image">
                   <img
-                    :src="'http://localhost:3000/'+image.file_path"
+                    :src="'http://localhost:3000/' + image.file_path"
                     alt="Placeholder image"
-                    style="height: 500px; object-fit: cover;"
+                    style="height: 500px; object-fit: cover"
                   />
                 </figure>
               </div>
@@ -32,21 +32,29 @@
               <p class="subtitle">Comments</p>
               <div class="columns">
                 <div class="column is-8">
-                  <input type="text" class="input" v-model="commTxt" placeholder="Add new comment" />
+                  <input
+                    type="text"
+                    class="input"
+                    v-model="commTxt"
+                    placeholder="Add new comment"
+                  />
                 </div>
                 <div class="column is-4">
                   <button @click="addComment" class="button">Add comment</button>
                 </div>
               </div>
             </div>
-            <div v-for="(comment,index) in comments" :key="comment.id" class="box">
+            <div v-for="(comment, index) in comments" :key="comment.id" class="box">
               <article class="media">
                 <div class="media-left">
                   <figure class="image is-64x64">
-                    <img src="https://bulma.io/images/placeholders/128x128.png" alt="Image" />
+                    <img
+                      src="https://bulma.io/images/placeholders/128x128.png"
+                      alt="Image"
+                    />
                   </figure>
                 </div>
-                <div v-if="index===editToggle" class="media-content">
+                <div v-if="index === editToggle" class="media-content">
                   <div class="content">
                     <input v-model="editCommentMessage" class="input" type="text" />
                     <p class="is-size-7">{{ comment.comment_date }}</p>
@@ -63,7 +71,7 @@
                     <div class="level-right">
                       <div class="level-item">
                         <button
-                          @click="saveEditComment(comment.id,index)"
+                          @click="saveEditComment(comment.id, index)"
                           class="button is-primary"
                         >
                           <span>Save Comment</span>
@@ -73,7 +81,10 @@
                         </button>
                       </div>
                       <div class="level-item">
-                        <button @click="editToggle = -1" class="button is-info is-outlined">
+                        <button
+                          @click="editToggle = -1"
+                          class="button is-info is-outlined"
+                        >
                           <span>Cancel</span>
                           <span class="icon is-small">
                             <i class="fas fa-times"></i>
@@ -90,17 +101,24 @@
                   </div>
                   <nav class="level">
                     <div class="level-left">
-                      <a @click="addLikeComment(comment.id)" class="level-item" aria-label="like">
+                      <a
+                        @click="addLikeComment(comment.id)"
+                        class="level-item"
+                        aria-label="like"
+                      >
                         <span class="icon is-small pr-3">
                           <i class="fas fa-heart" aria-hidden="true"></i>
                         </span>
-                        Like ({{comment.like}})
+                        Like ({{ comment.like }})
                       </a>
                     </div>
-                    <div class="level-right">
+                    <div class="level-right" v-if="isAdmin() | isCommentOwner(comment)">
                       <div class="level-item">
                         <button
-                          @click="editToggle = index; editCommentMessage = comment.comment"
+                          @click="
+                            editToggle = index;
+                            editCommentMessage = comment.comment;
+                          "
                           class="button is-warning"
                         >
                           <span>Edit</span>
@@ -128,7 +146,11 @@
           </div>
           <footer class="card-footer">
             <router-link class="card-footer-item" to="/">To Home Page</router-link>
-            <a class="card-footer-item" @click="deleteBlog">
+            <a
+              v-if="isAdmin() | isBlogOwner(blog)"
+              class="card-footer-item"
+              @click="deleteBlog"
+            >
               <span>Delete this blog</span>
             </a>
           </footer>
@@ -139,9 +161,12 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "@/plugins/axios";
 
 export default {
+  props: [
+    "user"
+  ],
   data() {
     return {
       blog: {},
@@ -213,9 +238,7 @@ export default {
       axios
         .put(`http://localhost:3000/comments/addlike/${commentId}`)
         .then((response) => {
-          let selectedComment = this.comments.filter(
-            (e) => e.id === commentId
-          )[0];
+          let selectedComment = this.comments.filter((e) => e.id === commentId)[0];
           console.log(selectedComment);
           selectedComment.like = response.data.like;
           console.log(selectedComment);
@@ -223,9 +246,7 @@ export default {
         .catch((error) => (this.error = error.message));
     },
     deleteBlog() {
-      const result = confirm(
-        `Are you sure you want to delete \'${this.blog.title}\'`
-      );
+      const result = confirm(`Are you sure you want to delete \'${this.blog.title}\'`);
       if (result) {
         axios
           .delete(`http://localhost:3000/blogs/${this.blog.id}`)
@@ -237,6 +258,18 @@ export default {
           });
       }
     },
+    isBlogOwner(blog) {
+      if (!this.user) return false;
+      return blog.create_by_id === this.user.id;
+    },
+    isCommentOwner(comment) {
+      if (!this.user) return false;
+      return comment.comment_by_id === this.user.id;
+    },
+    isAdmin() {
+      if (!this.user) return false;
+      return this.user.role === "admin"
+    }
   },
 };
 </script>

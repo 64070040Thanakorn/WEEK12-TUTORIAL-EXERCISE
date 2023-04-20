@@ -18,18 +18,22 @@
       <h1 class="is-size-4">Exist Image</h1>
 
       <div v-if="currentImage.length > 0" class="columns is-multiline">
-        <div v-for="(image) in currentImage" :key="image.id" class="column is-one-quarter">
+        <div v-for="image in currentImage" :key="image.id" class="column is-one-quarter">
           <div class="card">
             <div class="card-image">
               <figure class="image is-4by3">
-                <img :src="'http://localhost:3000'+image.file_path" alt="Placeholder image" />
+                <img
+                  :src="'http://localhost:3000' + image.file_path"
+                  alt="Placeholder image"
+                />
               </figure>
             </div>
             <footer class="card-footer">
               <a
                 @click="deleteCurrentImage(image.id)"
                 class="card-footer-item has-text-danger"
-              >Delete</a>
+                >Delete</a
+              >
               <span @click="selectMainId = image.id" class="icon card-footer-item">
                 <i v-if="selectMainId === image.id" class="fas fa-star mt-5"></i>
                 <i v-else class="far fa-star mt-5"></i>
@@ -39,7 +43,9 @@
         </div>
       </div>
       <div class="control">
-        <button @click="updateMainImage()" class="button is-link mb-2">Update Main</button>
+        <button @click="updateMainImage()" class="button is-link mb-2">
+          Update Main
+        </button>
       </div>
 
       <h1 class="is-size-4">New Image</h1>
@@ -52,7 +58,11 @@
       />
 
       <div v-if="images" class="columns is-multiline">
-        <div v-for="(image, index) in images" :key="image.id" class="column is-one-quarter">
+        <div
+          v-for="(image, index) in images"
+          :key="image.id"
+          class="column is-one-quarter"
+        >
           <div class="card">
             <div class="card-image">
               <figure class="image is-4by3">
@@ -60,7 +70,11 @@
               </figure>
             </div>
             <footer class="card-footer">
-              <a @click="deleteSelectImage(index)" class="card-footer-item has-text-danger">Delete</a>
+              <a
+                @click="deleteSelectImage(index)"
+                class="card-footer-item has-text-danger"
+                >Delete</a
+              >
             </footer>
           </div>
         </div>
@@ -76,7 +90,11 @@
       <div class="field">
         <label class="label">Content</label>
         <div class="control">
-          <textarea v-model="contentBlog" class="textarea" placeholder="Textarea"></textarea>
+          <textarea
+            v-model="contentBlog"
+            class="textarea"
+            placeholder="Textarea"
+          ></textarea>
         </div>
       </div>
 
@@ -115,7 +133,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "@/plugins/axios";
 
 export default {
   data() {
@@ -213,5 +231,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

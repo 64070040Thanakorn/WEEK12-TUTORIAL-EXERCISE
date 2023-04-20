@@ -3,9 +3,7 @@
     <!-- nav bar -->
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
-        <router-link to="/" class="navbar-item is-size-4">
-          YouBlog
-        </router-link>
+        <router-link to="/" class="navbar-item is-size-4"> YouBlog </router-link>
 
         <a
           role="button"
@@ -30,7 +28,10 @@
           <div v-if="user" class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link">
               <figure class="image is-24x24 my-auto">
-                <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                <img
+                  class="is-rounded"
+                  src="https://bulma.io/images/placeholders/128x128.png"
+                />
               </figure>
               <span class="pl-3">{{ user.first_name }} {{ user.last_name }}</span>
             </a>
@@ -53,17 +54,33 @@
         </div>
       </div>
     </nav>
-    
-    <router-view :key="$route.fullPath"/>
+    <router-view :key="$route.fullPath" @auth-change="onAuthChange" :user="user" />
   </div>
 </template>
 
 <script>
+import axios from '@/plugins/axios'
 export default {
   data () {
     return {
       user: null
     }
+  },
+  mounted () {
+    this.onAuthChange()
+  },
+  methods: {
+    onAuthChange () {
+      const token = localStorage.getItem('token')
+      if (token) {
+        this.getUser()
+      }
+    },
+    getUser () {
+      axios.get('http://localhost:3000/user/me').then(res => {
+        this.user = res.data
+      })
+    },
   }
 }
 </script>
