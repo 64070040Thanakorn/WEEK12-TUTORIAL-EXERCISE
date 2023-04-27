@@ -1,9 +1,11 @@
 const express = require("express");
 const path = require("path");
 const pool = require("../config");
+const Joi = require("joi");
 const fs = require("fs");
 const multer = require("multer");
 const { isLoggedIn } = require("../middlewares");
+const { log } = require("console");
 
 router = express.Router();
 
@@ -29,7 +31,7 @@ const storage = multer.diskStorage({
     callback(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, limits: {fileSize: 1024 * 1024} });
 
 router.put("/blogs/addlike/:id", isLoggedIn, async function (req, res, next) {
   const conn = await pool.getConnection();
@@ -53,7 +55,25 @@ router.put("/blogs/addlike/:id", isLoggedIn, async function (req, res, next) {
   }
 });
 
+const postSchema = Joi.object({
+  title: Joi.string().required().min(10).max(25).regex(/^[a-zA-Z]+$/),
+  content: Joi.string().required().min(50),
+  pinned: Joi.number().integer(),
+  status: Joi.string().required().valid('status_private', 'status_public'),
+  reference: Joi.string().uri(),
+  start_date: Joi.alternatives().conditional('end_date', {
+    then: Joi.date()
+  }),
+  end_date: Joi.date().min(Joi.ref('start_date')),
+});
+
 router.post("/blogs", isLoggedIn, upload.array("myImage", 5), async function (req, res, next) {
+  try {
+    await postSchema.validateAsync(req.body, { abortEarly: false });
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+
   const file = req.files;
   let pathArray = [];
 
@@ -65,16 +85,19 @@ router.post("/blogs", isLoggedIn, upload.array("myImage", 5), async function (re
   const content = req.body.content;
   const status = req.body.status;
   const pinned = req.body.pinned;
-  const pinned_status = pinned ? 1:0;
+  const reference = req.body.reference;
+  const start_date = req.body.start_date;
+  const end_date = req.body.end_date
   // Begin transaction
   const conn = await pool.getConnection();
   await conn.beginTransaction();
 
+  // req.user.id
   try {
     let results = await conn.query(
-      "INSERT INTO blogs(title, content, status, pinned, `like`, create_date, create_by_id) " +
-        "VALUES(?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?);",
-      [title, content, status, pinned_status, req.user.id]
+      "INSERT INTO blogs(title, content, status, pinned, `like`, create_date, create_by_id, `reference`, start_date, end_date) " +
+        "VALUES(?, ?, ?, ?, 0, CURRENT_TIMESTAMP, ?, ?, ?, ?);",
+      [title, content, status, pinned, req.user.id, reference, start_date, end_date]
     );
     const blogId = results[0].insertId;
 
@@ -86,8 +109,9 @@ router.post("/blogs", isLoggedIn, upload.array("myImage", 5), async function (re
     await conn.query("INSERT INTO images(blog_id, file_path, main) VALUES ?;", [pathArray]);
 
     await conn.commit();
-    res.send("success!");
+    res.status(200).send("success!");
   } catch (err) {
+    console.log(err);
     await conn.rollback();
     return res.status(400).json(err);
   } finally {

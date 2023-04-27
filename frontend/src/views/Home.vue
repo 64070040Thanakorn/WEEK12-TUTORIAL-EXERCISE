@@ -34,6 +34,8 @@
               </div>
               <div class="card-content">
                 <div class="title">{{ blog.title }}</div>
+                <div style="font-size: 12px">start date: {{blog.start_date ? blog.start_date : '-'}}</div>
+                <div style="font-size: 12px">end date: {{blog.end_date ? blog.end_date : '-'}}</div>
                 <div class="content" style="height: 200px">
                   {{ shortContent(blog.content) }}
                 </div>
